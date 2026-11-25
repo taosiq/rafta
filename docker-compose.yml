@@ -1,0 +1,49 @@
+# Full stack: PostgreSQL + FastAPI + Next.js.  `docker compose up --build`  ->  http://localhost:3000
+# Port taken? WEB_PORT=3001 API_PORT=8001 docker compose up --build
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rafta
+      POSTGRES_PASSWORD: rafta
+      POSTGRES_DB: rafta
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro   # creates the read-only assistant role
+    # Not published: only the api talks to the database (avoids clashing with a local Postgres on 5432).
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rafta -d rafta"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql+psycopg://rafta:rafta@db:5432/rafta
+      DATABASE_READONLY_URL: postgresql+psycopg://rafta_readonly:rafta_readonly@db:5432/rafta
+      CORS_ORIGINS: '["http://localhost:3000"]'
+      SEED_ON_STARTUP: "true"          # load the demo dataset on first boot
+      SCHEDULER_ENABLED: "true"
+      FORECAST_CRON: "0 2 * * *"
+      # Optional free LLM for the assistant (otherwise offline mode). See .env.example.
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-llama-3.3-70b-versatile}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${API_PORT:-8000}:8000"]
+
+  web:
+    build:
+      context: ./web
+      args:
+        API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    ports: ["${WEB_PORT:-3000}:3000"]
+
+volumes:
+  pgdata:

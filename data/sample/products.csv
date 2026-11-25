@@ -1,0 +1,31 @@
+sku,name,category,unit_cost,unit_price,lead_time_days,lead_time_std_days,order_cost,holding_rate,moq
+SKU-1000,Compact Bird Feeder,Garden,7.72,16.13,21,0.1,120.0,0.22,24
+SKU-1001,Nordic Plant Pot,Garden,53.1,114.56,7,1.9,60.0,0.3,5
+SKU-1002,Deluxe Coffee Press,Kitchen,24.01,44.14,3,0.1,40.0,0.24,6
+SKU-1003,Premium Hose Nozzle,Garden,14.61,21.86,7,1.2,60.0,0.22,6
+SKU-1004,Nordic Floor Lamp,Lighting,6.06,10.28,3,0.9,60.0,0.22,12
+SKU-1005,Deluxe Blender,Kitchen,5.26,10.54,7,0.8,60.0,0.22,12
+SKU-1006,Essential Cutlery Set,Tableware,4.75,10.49,14,2.0,80.0,0.2,1
+SKU-1007,Nordic Toothbrush Holder,Bath,7.6,14.6,7,1.1,60.0,0.25,24
+SKU-1008,Eco Throw Blanket,Home,14.27,25.14,5,1.5,80.0,0.3,10
+SKU-1009,Modern Desk Lamp,Lighting,5.8,13.36,10,1.7,60.0,0.24,24
+SKU-1010,Premium Soap Dispenser,Bath,34.89,54.51,3,0.5,60.0,0.31,12
+SKU-1011,Studio Cutting Board,Kitchen,10.96,22.12,5,0.8,120.0,0.29,6
+SKU-1012,Essential Lamp Shade,Lighting,9.18,15.24,7,0.3,80.0,0.31,1
+SKU-1013,Essential Wall Clock,Home,16.85,26.28,7,1.5,60.0,0.23,5
+SKU-1014,Premium Pruning Shears,Garden,25.59,41.51,7,0.9,40.0,0.23,10
+SKU-1015,Premium Serving Bowl,Tableware,24.49,40.0,5,1.2,25.0,0.24,5
+SKU-1016,Nordic Blender,Kitchen,2.43,5.34,21,2.0,120.0,0.22,10
+SKU-1017,Rustic Coffee Press,Kitchen,7.48,13.35,7,0.6,25.0,0.2,1
+SKU-1018,Essential String Lights,Lighting,66.8,112.25,10,1.8,80.0,0.18,1
+SKU-1019,Eco Cutlery Set,Tableware,15.58,26.65,10,2.5,25.0,0.22,12
+SKU-1020,Rustic Pruning Shears,Garden,2.91,5.95,10,1.8,40.0,0.3,6
+SKU-1021,Premium Bath Towel,Bath,2.85,5.93,7,0.7,60.0,0.24,1
+SKU-1022,Premium Blender,Kitchen,47.19,74.2,10,0.1,25.0,0.3,1
+SKU-1023,Rustic Desk Lamp,Lighting,6.81,15.76,3,0.7,120.0,0.22,6
+SKU-1024,Rustic String Lights,Lighting,21.11,32.28,10,1.3,60.0,0.27,6
+SKU-1025,Studio Blender,Kitchen,12.2,27.98,7,0.8,80.0,0.18,1
+SKU-1026,Compact Pruning Shears,Garden,5.05,9.61,14,0.5,25.0,0.26,5
+SKU-1027,Eco Toaster,Kitchen,17.55,28.73,10,2.2,120.0,0.25,10
+SKU-1028,Premium Dinner Plate,Tableware,7.83,15.61,7,0.6,60.0,0.3,10
+SKU-1029,Studio Serving Bowl,Tableware,13.23,31.04,7,1.8,60.0,0.2,6

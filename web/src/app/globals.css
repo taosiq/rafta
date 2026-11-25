@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+/* Dark mode is class-based so the user's toggle wins over the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Design tokens. One accent colour (violet), neutral greys, and colour only
+   where it carries meaning: status (risk / reorder / healthy) and the fixed
+   ABC class colours. Every chart palette was run through a CVD validator in
+   both modes (see docs/DESIGN.md).
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #fcfcfb;
+  --surface-2: #f5f5f3;
+  --border: #e7e6e2;
+  --border-strong: #d6d5cf;
+  --fg: #0b0b0b;
+  --fg-2: #52514e;
+  --muted: #6e6d69;
+  --accent: #6250d6;
+  --accent-fg: #ffffff;
+  --accent-soft: #efedfb;
+
+  /* Fixed ABC class colours: categorical slots 1-3 (validated all-pairs). */
+  --class-a: #2a78d6;
+  --class-b: #eb6834;
+  --class-c: #1baf7a;
+
+  /* Status: reserved, always shown with an icon and a label. */
+  --risk: #d03b3b;
+  --risk-soft: #fbeaea;
+  --risk-ink: #a32727;
+  --reorder: #fab219;
+  --reorder-soft: #fdf3dc;
+  --reorder-ink: #8a5a00;
+  --healthy: #0ca30c;
+  --healthy-soft: #e5f5e5;
+  --healthy-ink: #006300;
+
+  /* Simulation policies (validated as their own set) + neutral reference line. */
+  --policy-1: #6250d6;
+  --policy-2: #eda100;
+  --policy-3: #e87ba4;
+  --reference: #898781;
+
+  /* Chart chrome */
+  --grid: #ecebe7;
+  --axis: #c3c2b7;
+  --seq-100: #cde2fb;
+  --seq-700: #0d366b;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #111110;
+  --surface: #1a1a19;
+  --surface-2: #222220;
+  --border: #2c2c2a;
+  --border-strong: #3a3a37;
+  --fg: #f0efec;
+  --fg-2: #c3c2b7;
+  --muted: #9a9993;
+  --accent: #9085e9;
+  --accent-fg: #111110;
+  --accent-soft: #26233d;
+
+  --class-a: #3987e5;
+  --class-b: #d95926;
+  --class-c: #199e70;
+
+  --risk: #e66767;
+  --risk-soft: #3a1f1f;
+  --risk-ink: #f19c9c;
+  --reorder: #fab219;
+  --reorder-soft: #3a2f14;
+  --reorder-ink: #f6c65a;
+  --healthy: #0ca30c;
+  --healthy-soft: #15301a;
+  --healthy-ink: #5fcf5f;
+
+  --policy-1: #9085e9;
+  --policy-2: #c98500;
+  --policy-3: #d55181;
+  --reference: #898781;
+
+  --grid: #2a2a28;
+  --axis: #383835;
+  --seq-100: #1f2a3a;
+  --seq-700: #86b6ef;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-risk: var(--risk);
+  --color-risk-soft: var(--risk-soft);
+  --color-risk-ink: var(--risk-ink);
+  --color-reorder: var(--reorder);
+  --color-reorder-soft: var(--reorder-soft);
+  --color-reorder-ink: var(--reorder-ink);
+  --color-healthy: var(--healthy);
+  --color-healthy-soft: var(--healthy-soft);
+  --color-healthy-ink: var(--healthy-ink);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Numbers line up in columns. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Recharts: keep chart chrome recessive and on-token. */
+.recharts-cartesian-grid line {
+  stroke: var(--grid);
+}
+.recharts-cartesian-axis-tick-value {
+  fill: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--axis);
+}
+.recharts-surface:focus,
+.recharts-wrapper:focus,
+.recharts-sector:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
