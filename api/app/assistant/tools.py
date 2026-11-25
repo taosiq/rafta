@@ -200,18 +200,20 @@ def forecast_accuracy(db: Session, a: AccuracyArgs) -> dict:
     if run is None:
         return {"error": "No forecast run yet."}
     s = run.summary
-    out = {
-        "run_id": run.id,
-        "history_end": run.history_end.isoformat(),
-        "selected": s.get("selected"),
+    base = {"run_id": run.id, "history_end": run.history_end.isoformat()}
+    if a.abc_class:
+        # Only the requested class: mixing in overall figures lets a model misattribute them.
+        stats = s.get("by_class", {}).get(a.abc_class)
+        if stats is None:
+            return {**base, "error": f"No accuracy figures for class {a.abc_class}."}
+        return {**base, "abc_class": a.abc_class, "class_accuracy": stats}
+    return {
+        **base,
+        "overall": s.get("selected"),
         "per_model": s.get("per_model"),
         "selected_counts": s.get("selected_counts"),
+        "by_class": s.get("by_class"),
     }
-    if a.abc_class:
-        out["class"] = s.get("by_class", {}).get(a.abc_class)
-    else:
-        out["by_class"] = s.get("by_class")
-    return out
 
 
 def simulation_results(db: Session, _: NoArgs) -> dict:

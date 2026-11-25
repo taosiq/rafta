@@ -232,7 +232,13 @@ def render(name: str, r: dict) -> str:
             for k, v in sorted(r["by_abc"].items())
         )
     if name == "forecast_accuracy":
-        s = r["selected"]
+        if "class_accuracy" in r:
+            c = r["class_accuracy"]
+            return (
+                f"Class {r['abc_class']} ({c['skus']} SKUs), forecast run #{r['run_id']}: median MASE "
+                f"{c['median_mase']:.2f}, volume-weighted WAPE {c['weighted_wape']:.0%}."
+            )
+        s = r["overall"]
         return (
             f"Forecast run #{r['run_id']} (history to {r['history_end']}): median MASE {s['median_mase']:.2f}, "
             f"volume-weighted WAPE {s['weighted_wape']:.0%}, bias {s['weighted_bias']:+.1%}, "

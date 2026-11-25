@@ -194,3 +194,12 @@ def test_long_rate_limit_is_not_waited_and_org_id_is_hidden(seeded, monkeypatch)
     assert out["mode"] == "offline"
     assert "org_01abc" not in out["fallback_reason"] and "HTTP 429" in out["fallback_reason"]
     assert sleeps == []
+
+
+def test_class_accuracy_returns_only_that_class(seeded):
+    one = call_tool("forecast_accuracy", {"abc_class": "A"})
+    assert one["abc_class"] == "A" and "class_accuracy" in one
+    assert "overall" not in one and "per_model" not in one  # nothing to misattribute
+    everything = call_tool("forecast_accuracy", {})
+    assert {"overall", "per_model", "by_class"} <= set(everything)
+    assert "Class A" in service.render("forecast_accuracy", one)
