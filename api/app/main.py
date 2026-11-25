@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from app import (
     __version__,
@@ -64,6 +65,12 @@ async def request_context(request: Request, call_next):
     response.headers["x-request-id"] = request_id
     response.headers["server-timing"] = f"app;dur={(time.perf_counter() - started) * 1000:.1f}"
     return response
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    """The API has no UI of its own; send visitors to the interactive docs."""
+    return RedirectResponse("/docs")
 
 
 @app.get("/health", tags=["meta"])
