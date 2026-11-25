@@ -43,18 +43,19 @@ def _chat(messages: list[dict]) -> dict:
     headers = {"Content-Type": "application/json"}
     if s.llm_api_key:
         headers["Authorization"] = f"Bearer {s.llm_api_key}"
+    payload = {
+        "model": s.llm_model,
+        "messages": messages,
+        "tools": openai_tool_specs(),
+        "tool_choice": "auto",
+        "temperature": 0.1,
+        # Reasoning models spend completion tokens on hidden reasoning before answering.
+        "max_tokens": 2000,
+    }
+    if "gpt-oss" in s.llm_model:
+        payload["reasoning_effort"] = "low"  # faster, and leaves room for the answer
     resp = httpx.post(
-        f"{s.llm_base_url.rstrip('/')}/chat/completions",
-        headers=headers,
-        timeout=s.llm_timeout_s,
-        json={
-            "model": s.llm_model,
-            "messages": messages,
-            "tools": openai_tool_specs(),
-            "tool_choice": "auto",
-            "temperature": 0.1,
-            "max_tokens": 700,
-        },
+        f"{s.llm_base_url.rstrip('/')}/chat/completions", headers=headers, timeout=s.llm_timeout_s, json=payload
     )
     resp.raise_for_status()
     return resp.json()["choices"][0]["message"]

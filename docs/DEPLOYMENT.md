@@ -30,7 +30,7 @@ cd api
 1. Go to **New → Blueprint**, pick the GitHub repo, and Render reads `render.yaml`.
 2. When prompted, paste the same `DATABASE_URL`.
 3. Wait for the deploy, then open `https://<service>.onrender.com/health`. It should return `"database": "postgresql"`.
-4. Optional: to use a real LLM, add `LLM_BASE_URL=https://api.groq.com/openai/v1`, `LLM_API_KEY=<key>` and `LLM_MODEL=llama-3.3-70b-versatile` under **Environment**.
+4. Optional: to use a real LLM, add `LLM_BASE_URL=https://api.groq.com/openai/v1`, `LLM_API_KEY=<key>` and `LLM_MODEL=openai/gpt-oss-120b` under **Environment**.
 
 Free instances sleep after about 15 minutes idle. The website shows a "waking up the demo server" banner and retries automatically.
 

@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     # AI assistant: any OpenAI-compatible endpoint (Groq, Ollama, Gemini, OpenRouter...).
     llm_base_url: str | None = None
     llm_api_key: str | None = None
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-120b"
     llm_timeout_s: float = 30.0
     assistant_max_tool_rounds: int = 4
 

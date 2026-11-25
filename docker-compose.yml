@@ -29,7 +29,7 @@ services:
       # Optional free LLM for the assistant (otherwise offline mode). See .env.example.
       LLM_BASE_URL: ${LLM_BASE_URL:-}
       LLM_API_KEY: ${LLM_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-llama-3.3-70b-versatile}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-oss-120b}
     depends_on:
       db:
         condition: service_healthy
