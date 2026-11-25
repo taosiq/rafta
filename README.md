@@ -4,6 +4,10 @@
 
 <p align="center"><em>Rafta</em> is Turkish for "on the shelf".</p>
 
+<p align="center"><a href="https://rafta-five.vercel.app"><b>▶ Live demo</b></a> &nbsp;·&nbsp; <a href="https://rafta-api.onrender.com/docs">API docs</a> &nbsp;·&nbsp; <a href="docs/METHODOLOGY.md">Methodology</a></p>
+
+<p align="center"><sub>The demo API runs on a free tier that sleeps when idle, so the first load can take up to a minute.</sub></p>
+
 **AI inventory optimisation for small and medium-sized retailers.** Rafta imports sales and stock CSVs, classifies every SKU (ABC/XYZ), backtests six forecasting models, sets safety stock, reorder points and order quantities, and runs a simulation experiment to answer one research question:
 
 > **Does an ABC-differentiated service policy beat a uniform policy on total cost and stock-outs?**
