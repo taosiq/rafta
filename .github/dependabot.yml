@@ -1,11 +1,27 @@
+# Monthly dependency updates, grouped into one PR per ecosystem.
+# Major versions are skipped: they can contain breaking changes and are upgraded deliberately.
 version: 2
 updates:
   - package-ecosystem: pip
     directory: /api
     schedule: { interval: monthly }
+    groups:
+      python-deps: { patterns: ["*"], update-types: [minor, patch] }
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: npm
     directory: /web
     schedule: { interval: monthly }
+    groups:
+      web-deps: { patterns: ["*"], update-types: [minor, patch] }
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
+    groups:
+      actions: { patterns: ["*"] }
