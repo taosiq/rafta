@@ -153,3 +153,44 @@ def test_llm_http_error_reason_is_reported_without_secrets(seeded, monkeypatch):
     assert out["mode"] == "offline"
     assert "HTTP 400" in out["fallback_reason"] and "decommissioned" in out["fallback_reason"]
     assert "gsk_secret" not in out["fallback_reason"]
+
+
+def test_rate_limit_waits_briefly_then_retries(monkeypatch):
+    import httpx
+
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "llm_base_url", "https://llm.example/v1")
+    req = httpx.Request("POST", "https://llm.example/v1/chat/completions")
+    responses = iter(
+        [
+            httpx.Response(429, request=req, json={"error": {"message": "Rate limit. Please try again in 0.2s."}}),
+            httpx.Response(200, request=req, json={"choices": [{"message": {"content": "ok"}}]}),
+        ]
+    )
+    sleeps: list[float] = []
+    monkeypatch.setattr(service.httpx, "post", lambda *a, **k: next(responses))
+    monkeypatch.setattr(service.time, "sleep", sleeps.append)
+    assert service._chat([{"role": "user", "content": "hi"}]) == {"content": "ok"}
+    assert sleeps and sleeps[0] >= 0.2
+
+
+def test_long_rate_limit_is_not_waited_and_org_id_is_hidden(seeded, monkeypatch):
+    import httpx
+
+    msg = "Rate limit reached in organization `org_01abc` service tier on TPM. Please try again in 45s."
+    req = httpx.Request("POST", "https://llm.example/v1/chat/completions")
+    resp = httpx.Response(429, request=req, json={"error": {"message": msg}})
+    sleeps: list[float] = []
+    monkeypatch.setattr(service.time, "sleep", sleeps.append)
+    assert service._retry_after_seconds(resp) == 45.0
+
+    def limited(_):
+        raise httpx.HTTPStatusError("429", request=req, response=resp)
+
+    monkeypatch.setattr(service, "_chat", limited)
+    monkeypatch.setattr(service, "_llm_configured", lambda: True)
+    out = service.ask("Which products will run out next week?")
+    assert out["mode"] == "offline"
+    assert "org_01abc" not in out["fallback_reason"] and "HTTP 429" in out["fallback_reason"]
+    assert sleeps == []

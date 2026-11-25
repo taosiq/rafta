@@ -49,16 +49,37 @@ def _chat(messages: list[dict]) -> dict:
         "tools": openai_tool_specs(),
         "tool_choice": "auto",
         "temperature": 0.1,
-        # Reasoning models spend completion tokens on hidden reasoning before answering.
-        "max_tokens": 2000,
+        # Enough for a short answer plus brief hidden reasoning. Providers count this cap against
+        # tokens-per-minute limits, so a smaller cap means more questions fit in a free tier.
+        "max_tokens": 1000,
     }
     if "gpt-oss" in s.llm_model:
         payload["reasoning_effort"] = "low"  # faster, and leaves room for the answer
-    resp = httpx.post(
-        f"{s.llm_base_url.rstrip('/')}/chat/completions", headers=headers, timeout=s.llm_timeout_s, json=payload
-    )
+    url = f"{s.llm_base_url.rstrip('/')}/chat/completions"
+    resp = httpx.post(url, headers=headers, timeout=s.llm_timeout_s, json=payload)
+    wait = _retry_after_seconds(resp)
+    if wait is not None and wait <= MAX_RATE_LIMIT_WAIT_S:  # free-tier limit: wait briefly once
+        time.sleep(wait + 0.5)
+        resp = httpx.post(url, headers=headers, timeout=s.llm_timeout_s, json=payload)
     resp.raise_for_status()
     return resp.json()["choices"][0]["message"]
+
+
+MAX_RATE_LIMIT_WAIT_S = 10.0
+
+
+def _retry_after_seconds(resp: httpx.Response) -> float | None:
+    """Seconds to wait from a 429 response (Retry-After header or 'try again in 8.7s'), else None."""
+    if resp.status_code != 429:
+        return None
+    header = resp.headers.get("retry-after")
+    if header:
+        try:
+            return float(header)
+        except ValueError:
+            pass
+    m = re.search(r"try again in ([\d.]+)\s*s", resp.text)
+    return float(m.group(1)) if m else None
 
 
 def _truncate(obj: dict, limit: int = 6000) -> str:
@@ -291,6 +312,8 @@ def _describe_llm_error(exc: Exception) -> str:
             detail = err.get("message", "") if isinstance(err, dict) else str(err)
         except ValueError:
             detail = exc.response.text
+        detail = re.sub(r"\s*in organization `[^`]*`", "", detail)  # don't expose account identifiers
+        detail = re.sub(r"org_[A-Za-z0-9]+", "org_…", detail)
         return f"LLM provider returned HTTP {exc.response.status_code}: {detail}"[:300]
     if isinstance(exc, httpx.TimeoutException):
         return "LLM provider timed out"
