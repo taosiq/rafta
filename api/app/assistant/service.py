@@ -65,7 +65,7 @@ def _chat(messages: list[dict]) -> dict:
     return resp.json()["choices"][0]["message"]
 
 
-MAX_RATE_LIMIT_WAIT_S = 10.0
+MAX_RATE_LIMIT_WAIT_S = 20.0
 
 
 def _retry_after_seconds(resp: httpx.Response) -> float | None:
@@ -82,8 +82,17 @@ def _retry_after_seconds(resp: httpx.Response) -> float | None:
     return float(m.group(1)) if m else None
 
 
-def _truncate(obj: dict, limit: int = 6000) -> str:
-    text = json.dumps(obj, default=str)
+def _compact(value):
+    """Drop empty fields so tool results cost fewer tokens (free-tier LLMs limit tokens per minute)."""
+    if isinstance(value, dict):
+        return {k: _compact(v) for k, v in value.items() if v not in (None, "", [], {})}
+    if isinstance(value, list):
+        return [_compact(v) for v in value]
+    return value
+
+
+def _truncate(obj: dict, limit: int = 3500) -> str:
+    text = json.dumps(_compact(obj), default=str, separators=(",", ":"))
     return text if len(text) <= limit else text[:limit] + '..."(truncated)"'
 
 
