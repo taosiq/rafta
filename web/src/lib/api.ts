@@ -253,6 +253,7 @@ export interface AssistantAnswer {
   mode: "llm" | "offline";
   tool_calls: ToolCall[];
   latency_ms: number;
+  fallback_reason?: string | null;
 }
 
 export interface DataStatus {

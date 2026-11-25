@@ -134,3 +134,22 @@ def test_every_tool_runs_and_renders(seeded, tool, args):
     assert isinstance(text, str) and text
     if "products" in result:
         assert len(result["products"]) <= args.get("limit", 50)
+
+
+def test_llm_http_error_reason_is_reported_without_secrets(seeded, monkeypatch):
+    import httpx
+
+    request = httpx.Request(
+        "POST", "https://llm.example/v1/chat/completions", headers={"Authorization": "Bearer gsk_secret"}
+    )
+    response = httpx.Response(400, request=request, json={"error": {"message": "model `x` has been decommissioned"}})
+
+    def bad(_):
+        raise httpx.HTTPStatusError("bad request", request=request, response=response)
+
+    monkeypatch.setattr(service, "_chat", bad)
+    monkeypatch.setattr(service, "_llm_configured", lambda: True)
+    out = service.ask("Which products will run out next week?")
+    assert out["mode"] == "offline"
+    assert "HTTP 400" in out["fallback_reason"] and "decommissioned" in out["fallback_reason"]
+    assert "gsk_secret" not in out["fallback_reason"]

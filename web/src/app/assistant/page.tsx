@@ -203,6 +203,9 @@ export default function AssistantPage() {
                     ))}
                     <div className="num text-xs text-muted">
                       {m.answer.mode === "llm" ? "LLM" : "Offline"} · {m.answer.latency_ms} ms
+                      {m.answer.fallback_reason && (
+                        <span title={m.answer.fallback_reason}> · LLM unavailable, answered offline</span>
+                      )}
                     </div>
                   </div>
                 </div>

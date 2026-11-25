@@ -251,10 +251,12 @@ def ask(question: str) -> dict:
     question = question.strip()[:MAX_QUESTION_CHARS]
     started = time.perf_counter()
     mode = "llm" if _llm_configured() else "offline"
+    fallback_reason: str | None = None
     try:
         answer, calls = ask_llm(question) if mode == "llm" else ask_offline(question)
-    except (httpx.HTTPError, KeyError) as exc:
-        log.warning("LLM unavailable (%s); falling back to offline mode", exc)
+    except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
+        fallback_reason = _describe_llm_error(exc)
+        log.warning("LLM unavailable (%s); falling back to offline mode", fallback_reason)
         mode = "offline"
         answer, calls = ask_offline(question)
     latency = int((time.perf_counter() - started) * 1000)
@@ -268,4 +270,29 @@ def ask(question: str) -> dict:
                 tool_calls=[{"name": c["name"], "arguments": c["arguments"]} for c in calls],
             )
         )
-    return {"answer": answer, "mode": mode, "tool_calls": calls, "latency_ms": latency, "available_tools": list(TOOLS)}
+    return {
+        "answer": answer,
+        "mode": mode,
+        "tool_calls": calls,
+        "latency_ms": latency,
+        "available_tools": list(TOOLS),
+        "fallback_reason": fallback_reason,
+    }
+
+
+def _describe_llm_error(exc: Exception) -> str:
+    """Short, secret-free reason the LLM call failed (status + provider message), for the UI and logs."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        detail = ""
+        try:
+            body = exc.response.json()
+            err = body.get("error", body) if isinstance(body, dict) else body
+            detail = err.get("message", "") if isinstance(err, dict) else str(err)
+        except ValueError:
+            detail = exc.response.text
+        return f"LLM provider returned HTTP {exc.response.status_code}: {detail}"[:300]
+    if isinstance(exc, httpx.TimeoutException):
+        return "LLM provider timed out"
+    if isinstance(exc, httpx.HTTPError):
+        return f"Could not reach the LLM provider ({type(exc).__name__})"
+    return f"Unexpected LLM response ({type(exc).__name__})"
