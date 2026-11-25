@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -41,6 +41,16 @@ class Settings(BaseSettings):
     llm_model: str = "llama-3.3-70b-versatile"
     llm_timeout_s: float = 30.0
     assistant_max_tool_rounds: int = 4
+
+    @field_validator("database_url", "database_readonly_url")
+    @classmethod
+    def _use_psycopg_driver(cls, v: str | None) -> str | None:
+        """Hosted Postgres (Vercel/Neon, Render, Supabase) hands out postgres:// URLs; use psycopg 3."""
+        if v and v.startswith("postgres://"):
+            v = "postgresql://" + v[len("postgres://") :]
+        if v and v.startswith("postgresql://"):
+            v = "postgresql+psycopg://" + v[len("postgresql://") :]
+        return v
 
 
 @lru_cache

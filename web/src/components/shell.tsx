@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "./logo";
+import { ServerStatus } from "./server-status";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
@@ -172,7 +173,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLinks onNavigate={() => setOpen(false)} />
           </div>
         )}
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-8 sm:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-8 sm:px-8">
+          <ServerStatus />
+          {children}
+        </main>
       </div>
     </div>
   );

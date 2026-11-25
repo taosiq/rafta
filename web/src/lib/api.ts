@@ -32,8 +32,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       /* not JSON */
     }
-    const message =
-      typeof detail === "string"
+    const message = [502, 503, 504].includes(res.status)
+      ? "The server is waking up. Retrying…"
+      : typeof detail === "string"
         ? detail
         : detail && typeof detail === "object" && "message" in detail
           ? String((detail as { message: string }).message)

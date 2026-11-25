@@ -1,54 +1,48 @@
-# Free deployment
+# Free deployment: Vercel + Render
 
-Everything below has a free tier with no credit card required (at the time of writing). Check each provider's current limits.
-
-| Piece | Free option | Alternative |
+| Part | Host | Notes |
 |---|---|---|
-| PostgreSQL | [Neon](https://neon.tech) | Supabase |
-| API (Docker) | [Render](https://render.com) web service | Fly.io, Koyeb, Railway trial |
-| Web | [Vercel](https://vercel.com) Hobby | Netlify, Cloudflare Pages |
-| LLM | [Groq](https://console.groq.com) free tier | Google AI Studio (Gemini), OpenRouter free models |
-| CI | GitHub Actions (free for public repos) | |
+| Website (Next.js) | **Vercel** (Hobby) | Root directory `web`. `/api/v1/*` is proxied to the API. |
+| Database (PostgreSQL) | **Vercel Storage → Neon** (free) | Created from the Vercel dashboard |
+| API (FastAPI, Docker) | **Render** (free web service) | Deployed from [`render.yaml`](../render.yaml) |
+| LLM (optional) | **Groq** free tier | Without a key, the assistant runs in offline mode |
 
-## 1. Database (Neon)
+Why the API isn't on Vercel: its scientific stack (NumPy, pandas, SciPy, statsmodels, LightGBM) is about 385 MB, over Vercel's limit for Python functions. The forecasting job also runs longer than a serverless function allows.
 
-1. Create a project and copy the connection string. Change the scheme to `postgresql+psycopg://`.
-2. In the Neon SQL editor, create the read-only role used by the assistant:
+## 1. Database (in Vercel)
 
-   ```sql
-   CREATE ROLE rafta_readonly LOGIN PASSWORD '<strong-password>';
-   GRANT USAGE ON SCHEMA public TO rafta_readonly;
-   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO rafta_readonly;
-   ALTER ROLE rafta_readonly SET default_transaction_read_only = on;
-   ```
+1. In Vercel, open **Storage → Create Database → Neon (Serverless Postgres)** and choose the free plan and a region close to the API (for example Frankfurt).
+2. Open the database's **.env.local** tab and copy `DATABASE_URL`. A `postgres://…` URL is fine; the API converts it.
 
-   If the tables already exist, also run `GRANT SELECT ON ALL TABLES IN SCHEMA public TO rafta_readonly;`.
+## 2. Load the demo data (from your machine, once)
 
-## 2. API (Render)
+Render's free CPU is small, so build the dataset and run the pipeline locally against the cloud database:
 
-1. Create a new **Web Service** from your GitHub repo, with root directory `api` and the **Docker** runtime.
-2. Set these environment variables:
+```bash
+cd api
+# PowerShell: $env:DATABASE_URL="<neon url>"   bash: export DATABASE_URL="<neon url>"
+.venv/Scripts/alembic upgrade head
+.venv/Scripts/python -m app.cli seed
+```
 
-   ```
-   DATABASE_URL=postgresql+psycopg://<user>:<pw>@<neon-host>/<db>?sslmode=require
-   DATABASE_READONLY_URL=postgresql+psycopg://rafta_readonly:<pw>@<neon-host>/<db>?sslmode=require
-   CORS_ORIGINS=["https://<your-app>.vercel.app"]
-   SEED_ON_STARTUP=true
-   LLM_BASE_URL=https://api.groq.com/openai/v1
-   LLM_API_KEY=<groq key>
-   ```
+## 3. API (Render)
 
-3. Set the health check path to `/health`. The Dockerfile already runs `alembic upgrade head` on start.
+1. Go to **New → Blueprint**, pick the GitHub repo, and Render reads `render.yaml`.
+2. When prompted, paste the same `DATABASE_URL`.
+3. Wait for the deploy, then open `https://<service>.onrender.com/health`. It should return `"database": "postgresql"`.
+4. Optional: to use a real LLM, add `LLM_BASE_URL=https://api.groq.com/openai/v1`, `LLM_API_KEY=<key>` and `LLM_MODEL=llama-3.3-70b-versatile` under **Environment**.
 
-Free instances sleep when idle, so the first request after a sleep takes about 30–60 s. The in-process nightly scheduler only fires while the instance is awake. To keep it reliable on a free tier, add a GitHub Actions cron that calls `POST /api/v1/jobs {"job_type":"refresh"}`.
+Free instances sleep after about 15 minutes idle. The website shows a "waking up the demo server" banner and retries automatically.
 
-## 3. Web (Vercel)
+## 4. Website (Vercel)
 
-1. Import the repo with root directory `web`.
-2. Add the environment variable `API_URL=https://<your-api>.onrender.com`. It is used by the `/api/v1` rewrite at build time.
-3. Deploy.
+1. Go to **Add New → Project**, import the repo, and set **Root Directory** to `web`.
+2. Add the environment variable `API_URL=https://<service>.onrender.com`. The `/api/v1` rewrite uses it at build time.
+3. Click **Deploy**. If the Render URL changes later, update `API_URL` and redeploy.
 
-## Optional: scheduled refresh with GitHub Actions
+## Optional: keep forecasts fresh
+
+The in-process nightly scheduler only fires while the free instance is awake. To refresh reliably, add a GitHub Actions cron that calls the API:
 
 ```yaml
 # .github/workflows/nightly.yml

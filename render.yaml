@@ -1,0 +1,21 @@
+# Render blueprint for the Rafta API (free plan). New -> Blueprint -> pick this repo.
+# The database lives in Vercel Storage (Neon); paste its connection string as DATABASE_URL.
+services:
+  - type: web
+    name: rafta-api
+    runtime: docker
+    rootDir: api
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false # prompted on first deploy
+      - key: SCHEDULER_ENABLED
+        value: "true"
+      - key: SEED_ON_STARTUP
+        value: "false" # demo data is loaded once with `python -m app.cli seed`
+      - key: ENABLE_LIGHTGBM
+        value: "true"

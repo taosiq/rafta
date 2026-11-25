@@ -7,7 +7,14 @@ import { api, fetcher, type Job } from "./api";
 
 export function useApi<T>(path: string | null, config?: SWRConfiguration<T>) {
   // keepPreviousData: refetches keep the frame instead of flashing a skeleton
-  return useSWR<T>(path, fetcher, { revalidateOnFocus: false, keepPreviousData: true, ...config });
+  return useSWR<T>(path, fetcher, {
+    revalidateOnFocus: false,
+    keepPreviousData: true,
+    // Free-tier API may be cold-starting: keep retrying for ~2 minutes before giving up.
+    errorRetryInterval: 5000,
+    errorRetryCount: 24,
+    ...config,
+  });
 }
 
 /** Start a background job and poll until it finishes, then revalidate every cached query. */
