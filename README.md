@@ -10,7 +10,7 @@
 
 It also has an AI assistant you can ask *"Which products will run out next week?"*. The assistant answers through read-only, type-checked tool calls, never through generated SQL.
 
-![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF) ![Python](https://img.shields.io/badge/Python-3.14-3776AB) ![Next.js](https://img.shields.io/badge/Next.js-16-000000) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1) ![License](https://img.shields.io/badge/license-MIT-green)
+[![CI](https://github.com/taosiq/rafta/actions/workflows/ci.yml/badge.svg)](https://github.com/taosiq/rafta/actions/workflows/ci.yml) ![Python](https://img.shields.io/badge/Python-3.14-3776AB) ![Next.js](https://img.shields.io/badge/Next.js-16-000000) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1) ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
